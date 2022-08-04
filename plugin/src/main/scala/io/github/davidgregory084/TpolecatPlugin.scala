@@ -17,9 +17,10 @@
 package io.github.davidgregory084
 
 import sbt.Keys._
-import sbt._
+import sbt.{ScalaVersion => _, _}
 
 import scala.util.Try
+import org.typelevel.scalacoptions._
 
 object TpolecatPlugin extends AutoPlugin {
   override def trigger: PluginTrigger = allRequirements
@@ -27,28 +28,28 @@ object TpolecatPlugin extends AutoPlugin {
   import ScalaVersion._
 
   object autoImport {
-    object ScalacOptions extends ScalacOptions
 
     def scalacOptionsFor(
       version: String,
       modeScalacOptions: Set[ScalacOption]
     ): Seq[String] = {
-      val supportedOptions = (CrossVersion.partialVersion(version), version.split('.')) match {
+      (CrossVersion.partialVersion(version), version.split('.')) match {
         case (Some((0, _)), _) => // dotty prereleases use 0 as major version
-          modeScalacOptions
-            .filter(_.isSupported(V3_0_0)) // treat dotty prereleases as 3.0.0
+          ScalacOptions.tokensForVersion(
+            V3_0_0,
+            modeScalacOptions
+          ) // treat dotty prereleases as 3.0.0
         case (Some((maj, min)), Array(maj2, min2, patch))
             if maj.toString == maj2 && min.toString == min2 =>
-          modeScalacOptions
-            .filter(_.isSupported(ScalaVersion(maj, min, Try(patch.toLong).getOrElse(0))))
+          val patchVersion = patch.takeWhile(_.isDigit)
+          val binaryVersion = ScalaVersion(maj, min, Try(patchVersion.toLong).getOrElse(0))
+          ScalacOptions.tokensForVersion(binaryVersion, modeScalacOptions)
         case (Some((maj, min)), _) =>
-          modeScalacOptions
-            .filter(_.isSupported(ScalaVersion(maj, min, 0)))
+          val binaryVersion = ScalaVersion(maj, min, 0)
+          ScalacOptions.tokensForVersion(binaryVersion, modeScalacOptions)
         case (None, _) =>
-          Set.empty[ScalacOption]
+          Seq.empty[String]
       }
-
-      supportedOptions.toList.flatMap(opt => opt.option :: opt.args)
     }
 
     val tpolecatDefaultOptionsMode = settingKey[OptionsMode](
