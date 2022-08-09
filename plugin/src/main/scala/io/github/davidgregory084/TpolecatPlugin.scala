@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 David Gregory
+ * Copyright 2022 Typelevel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.davidgregory084
+package org.typelevel.sbt.tpolecat
 
 import sbt.Keys._
 import sbt.{ScalaVersion => _, _}
@@ -25,8 +25,6 @@ import org.typelevel.scalacoptions._
 object TpolecatPlugin extends AutoPlugin {
   override def trigger: PluginTrigger = allRequirements
 
-  import ScalaVersion._
-
   object autoImport {
 
     def scalacOptionsFor(
@@ -34,14 +32,9 @@ object TpolecatPlugin extends AutoPlugin {
       modeScalacOptions: Set[ScalacOption]
     ): Seq[String] = {
       (CrossVersion.partialVersion(version), version.split('.')) match {
-        case (Some((0, _)), _) => // dotty prereleases use 0 as major version
-          ScalacOptions.tokensForVersion(
-            V3_0_0,
-            modeScalacOptions
-          ) // treat dotty prereleases as 3.0.0
         case (Some((maj, min)), Array(maj2, min2, patch))
             if maj.toString == maj2 && min.toString == min2 =>
-          val patchVersion = patch.takeWhile(_.isDigit)
+          val patchVersion  = patch.takeWhile(_.isDigit)
           val binaryVersion = ScalaVersion(maj, min, Try(patchVersion.toLong).getOrElse(0))
           ScalacOptions.tokensForVersion(binaryVersion, modeScalacOptions)
         case (Some((maj, min)), _) =>
@@ -98,15 +91,15 @@ object TpolecatPlugin extends AutoPlugin {
   val commandAliases =
     addCommandAlias(
       "tpolecatDevMode",
-      "set ThisBuild / tpolecatOptionsMode := _root_.io.github.davidgregory084.DevMode"
+      "set ThisBuild / tpolecatOptionsMode := _root_.org.typelevel.sbt.tpolecat.DevMode"
     ) ++
       addCommandAlias(
         "tpolecatCiMode",
-        "set ThisBuild / tpolecatOptionsMode := _root_.io.github.davidgregory084.CiMode"
+        "set ThisBuild / tpolecatOptionsMode := _root_.org.typelevel.sbt.tpolecat.CiMode"
       ) ++
       addCommandAlias(
         "tpolecatReleaseMode",
-        "set ThisBuild / tpolecatOptionsMode := _root_.io.github.davidgregory084.ReleaseMode"
+        "set ThisBuild / tpolecatOptionsMode := _root_.org.typelevel.sbt.tpolecat.ReleaseMode"
       )
 
   override def buildSettings: Seq[Setting[_]] = Seq(

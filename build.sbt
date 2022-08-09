@@ -1,14 +1,14 @@
 import com.typesafe.tools.mima.core._
 
-ThisBuild / organization     := "io.github.davidgregory084"
-ThisBuild / organizationName := "David Gregory"
+ThisBuild / organization     := "org.typelevel"
+ThisBuild / organizationName := "Typelevel"
 
 ThisBuild / startYear := Some(2022)
 ThisBuild / licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 ThisBuild / scmInfo := Some(
   ScmInfo(
-    url("https://github.com/DavidGregory084/sbt-tpolecat"),
-    "scm:git:git@github.com:DavidGregory084/sbt-tpolecat.git"
+    url("https://github.com/typelevel/sbt-tpolecat"),
+    "scm:git:git@github.com:typelevel/sbt-tpolecat.git"
   )
 )
 ThisBuild / developers := List(
@@ -82,11 +82,8 @@ lazy val `sbt-tpolecat-scalafix` = scalafixProject("sbt-tpolecat")
   .rulesConfigure(project =>
     project.settings(
       mimaPreviousArtifacts := Set(
-        (project / projectID).value.withRevision("0.4.1").withExplicitArtifacts(Vector.empty)
       )
     )
   )
-  .inputSettings(
-    libraryDependencies += (`sbt-tpolecat-plugin` / projectID).value.withRevision("0.4.0")
-  )
+  .inputSettings(addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.4.0"))
   .outputConfigure(_.dependsOn(`sbt-tpolecat-plugin`))
